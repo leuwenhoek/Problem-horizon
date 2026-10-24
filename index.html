@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Problem Statement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000000;
+    --fg: #ffffff;
+    --muted: #8a8a8a;
+    --line: rgba(255, 255, 255, 0.12);
+    --line-strong: rgba(255, 255, 255, 0.28);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 6vh 24px;
+    overflow-x: hidden;
+  }
+
+  /* subtle grid texture, pure black & white */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(circle at 50% 42%, #000 0%, transparent 72%);
+    -webkit-mask-image: radial-gradient(circle at 50% 42%, #000 0%, transparent 72%);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .wrap {
+    position: relative;
+    width: 100%;
+    max-width: 760px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 34px;
+    opacity: 0;
+    animation: rise 0.9s var(--ease) 0.05s forwards;
+  }
+
+  .statement {
+    font-size: clamp(30px, 6.4vw, 62px);
+    line-height: 1.04;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    opacity: 0;
+    animation: rise 0.9s var(--ease) 0.14s forwards;
+  }
+
+  .statement .accent {
+    font-weight: 300;
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .cta {
+    margin-top: 48px;
+    opacity: 0;
+    animation: rise 0.9s var(--ease) 0.26s forwards;
+  }
+
+  .details-btn {
+    appearance: none;
+    cursor: pointer;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 14px 28px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.4s var(--ease), border-color 0.4s var(--ease), color 0.4s var(--ease), transform 0.2s var(--ease);
+  }
+
+  .details-btn:hover { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .details-btn:active { transform: scale(0.97); }
+
+  .details-btn .arrow {
+    display: inline-block;
+    transition: transform 0.45s var(--ease);
+  }
+
+  .details-btn[aria-expanded="true"] .arrow { transform: rotate(180deg); }
+
+  .details-btn .label-close { display: none; }
+  .details-btn[aria-expanded="true"] .label-open { display: none; }
+  .details-btn[aria-expanded="true"] .label-close { display: inline; }
+
+  /* expanding panel */
+  .panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.7s var(--ease);
+    text-align: left;
+  }
+
+  .panel.open { grid-template-rows: 1fr; }
+
+  .panel-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .panel-content {
+    margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.6s var(--ease) 0.12s, transform 0.6s var(--ease) 0.12s;
+  }
+
+  .panel.open .panel-content { opacity: 1; transform: translateY(0); }
+
+  .section-k {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+
+  .brief {
+    font-size: clamp(16px, 2vw, 19px);
+    line-height: 1.6;
+    color: #d6d6d6;
+    font-weight: 300;
+    max-width: 62ch;
+  }
+
+  .brief strong { color: var(--fg); font-weight: 600; }
+
+  .build-list {
+    list-style: none;
+    margin-top: 34px;
+    display: grid;
+    gap: 2px;
+  }
+
+  .build-list li {
+    display: flex;
+    gap: 18px;
+    align-items: baseline;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 16px;
+    color: #cfcfcf;
+    font-weight: 300;
+  }
+
+  .build-list li .n {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    min-width: 22px;
+    letter-spacing: 0.05em;
+  }
+
+  .build-list li strong { color: var(--fg); font-weight: 500; }
+
+  /* scoring — the two things that earn extra points */
+  .scoring {
+    margin-top: 48px;
+  }
+
+  .score-cards {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .score {
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    padding: 22px 22px 24px;
+    transition: background 0.4s var(--ease), transform 0.4s var(--ease);
+  }
+
+  .score:hover { background: rgba(255, 255, 255, 0.04); transform: translateY(-3px); }
+
+  .score .plus {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--fg);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 4px 11px;
+    display: inline-block;
+  }
+
+  .score h3 {
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 16px 0 8px;
+  }
+
+  .score p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .foot {
+    margin-top: 44px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 560px) {
+    .score-cards { grid-template-columns: 1fr; }
+    .eyebrow { margin-bottom: 26px; letter-spacing: 0.3em; }
+    .cta { margin-top: 40px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .panel-content { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="eyebrow">Hackathon&nbsp;&middot;&nbsp;Problem Statement</p>
+
+    <!-- EDIT ME: one-line problem statement -->
+    <h1 class="statement">Make something boring <span class="accent">impossible to put down.</span></h1>
+
+    <div class="cta">
+      <button class="details-btn" id="toggle" aria-expanded="false" aria-controls="panel">
+        <span class="label-open">View the details</span>
+        <span class="label-close">Hide the details</span>
+        <span class="arrow" aria-hidden="true">&#9660;</span>
+      </button>
+    </div>
+
+    <section class="panel" id="panel" aria-hidden="true">
+      <div class="panel-inner">
+        <div class="panel-content">
+
+          <p class="section-k">The brief</p>
+          <p class="brief">
+            Pick one <strong>mundane, everyday task</strong> &mdash; something people do out of
+            obligation, not desire &mdash; and rebuild it into an experience people actually
+            <strong>want</strong> to come back to. Your job isn&rsquo;t to add more features. It&rsquo;s to
+            turn a chore into a loop worth repeating.
+          </p>
+
+          <p class="section-k" style="margin-top:40px;">What you&rsquo;ll build</p>
+          <ul class="build-list">
+            <li><span class="n">01</span><span>A <strong>working prototype</strong> of your reimagined task &mdash; web, mobile, or desktop.</span></li>
+            <li><span class="n">02</span><span>A clear <strong>core loop</strong>: the single action a user repeats, and why they return.</span></li>
+            <li><span class="n">03</span><span>A <strong>60-second demo</strong> showing the task before vs. after your take on it.</span></li>
+          </ul>
+
+          <div class="scoring">
+            <p class="section-k">Extra points &mdash; judged only on these two</p>
+            <div class="score-cards">
+              <div class="score">
+                <span class="plus">+ POINTS</span>
+                <h3>Gamification</h3>
+                <p>Progress, feedback, stakes, reward. Does the experience pull people back and make the ordinary feel earned?</p>
+              </div>
+              <div class="score">
+                <span class="plus">+ POINTS</span>
+                <h3>Simplicity</h3>
+                <p>Zero friction, nothing to learn. Can anyone understand it in one glance and use it in one tap?</p>
+              </div>
+            </div>
+          </div>
+
+          <p class="foot">Build small. Build sharp. Win on the two things that matter.</p>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var btn = document.getElementById("toggle");
+      var panel = document.getElementById("panel");
+
+      btn.addEventListener("click", function () {
+        var open = panel.classList.toggle("open");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        panel.setAttribute("aria-hidden", open ? "false" : "true");
+        if (open) {
+          requestAnimationFrame(function () {
+            panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
